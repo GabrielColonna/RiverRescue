@@ -1,13 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charity Water Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>River Rescue - Start</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <h1>Welcome to the Charity Water Game Prototype</h1>
-    <script src="script.js"></script>
+  <div id="game-container">
+    <div id="home-screen">
+      <h1>RIVER RESCUE</h1>
+      <p>LEVEL <span id="level">1</span></p>
+      <button id="start-btn">Start Game</button>
+    </div>
+  </div>
+  <script>
+    // Get last level from localStorage or default to 1
+    const levelDisplay = document.getElementById('level');
+    let lastLevel = localStorage.getItem('riverRescueLevel') || 1;
+    levelDisplay.innerText = lastLevel;
+    document.getElementById('start-btn').onclick = function() {
+      window.location.href = 'game.html?level=' + lastLevel;
+    };
+  </script>
 </body>
 </html>

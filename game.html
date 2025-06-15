@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>River Rescue - Game</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="game-container">
+    <!-- Game Screen -->
+    <div id="game-screen">
+      <div class="river-bank"></div>
+      <div id="river"></div>
+      <div class="river-bank"></div>
+      <p id="score">Score: 0</p>
+    </div>
+    <!-- End/Message Screen -->
+    <div id="end-screen" class="hidden">
+      <h2 id="end-message"></h2>
+      <button id="next-btn" class="hidden">Next Level</button>
+      <button id="restart-btn">Restart Level</button>
+      <button id="menu-btn">Main Menu</button>
+    </div>
+  </div>
+  <div id="sparkle" class="hidden">✨</div>
+  <audio id="happy-sound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae7e2.mp3"></audio>
+  <audio id="fail-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b7b7b.mp3"></audio>
+  <script src="game.js"></script>
+</body>
+</html>
