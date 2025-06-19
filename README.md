@@ -1,5 +1,16 @@
-# Charity: water Game Prototype
+River Rescue is a tap-based web game where players clean a river by removing trash and avoiding animals. The game gets faster and harder as you level up.
 
-In this project, you’ll begin transforming your game concept from last week into a working interactive prototype using HTML, CSS, and JavaScript.
+Built with:
+HTML
+CSS
+JavaScript
 
-This first version should focus on core functionality — clickable elements, score tracking, and a basic layout. The goal is to bring your idea to life with simple, working mechanics that you’ll refine and expand in the next milestone.
+🎮 How to Play
+Tap the trash to remove it.
+
+Don’t tap the animals — or you lose!
+
+Complete levels to clean the river.
+
+🚀 Run the Game
+Just open index.html in your browser.
