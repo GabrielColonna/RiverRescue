@@ -13,7 +13,19 @@
       <div class="river-bank"></div>
       <div id="river"></div>
       <div class="river-bank"></div>
-      <p id="score">Score: 0</p>
+      <div id="score-pause-container">
+        <p id="score">Score: 0</p>
+        <button id="pause-btn" title="Pause Game">
+          <img id="pause-btn-img" src="img/pause.jpg" alt="Pause" style="width:28px;height:28px;vertical-align:middle;">
+        </button>
+      </div>
+      <div id="pause-overlay">
+        <div id="pause-popup">
+          Game Paused<br>
+          <span style="font-size:1.1rem; font-weight:normal;">Click anywhere to resume</span><br><br>
+          <button id="pause-menu-btn">Return to Main Menu</button>
+        </div>
+      </div>
     </div>
     <!-- End/Message Screen -->
     <div id="end-screen" class="hidden">

@@ -1,5 +1,3 @@
-// River Rescue game logic for game.html
-// This is a copy of your previous script.js, but now reads the level from the URL and saves progress to localStorage
 
 // Helper function to get the level number from the URL
 function getLevelFromURL() {
@@ -7,16 +5,27 @@ function getLevelFromURL() {
   return parseInt(params.get('level')) || 1;
 }
 
+// Helper function to get the difficulty from the URL
+function getDifficultyFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  // Default to 'easy' if not set
+  return params.get('difficulty') || 'easy';
+}
+
 // Game state variables
 let score = 0; // Player's score
 let level = getLevelFromURL(); // Current level
-let gameInterval; // Used for intervals (not used in this code)
+let targetScore = 10 + (level - 1) * 5; // Score needed to win (10 for level 1)
 let itemFallSpeed = 2; // How fast items fall
-let itemsToSpawn = 5; // How many items to spawn this level
-let garbageChance = 0.7; // Chance an item is garbage
-let totalGarbage = 0; // How many garbage items this level
-let clearedGarbage = 0; // How many garbage items have been cleared
+
+// Set garbageChance to a fixed value (e.g., 0.7 means 70% chance)
+// This value will NOT change based on difficulty
+let garbageChance = 0.7; // Fixed garbage chance for all difficulties
+
 let gameActive = false; // Is the game currently running?
+
+// Get the selected difficulty
+let difficulty = getDifficultyFromURL();
 
 // Get references to important HTML elements
 const gameScreen = document.getElementById('game-screen');
@@ -30,6 +39,11 @@ const menuBtn = document.getElementById('menu-btn');
 const sparkle = document.getElementById('sparkle');
 const happySound = document.getElementById('happy-sound');
 const failSound = document.getElementById('fail-sound');
+const pauseBtn = document.getElementById('pause-btn');
+const pauseBtnImg = document.getElementById('pause-btn-img');
+const pauseOverlay = document.getElementById('pause-overlay');
+const pauseMenuBtn = document.getElementById('pause-menu-btn');
+let paused = false;
 
 // Save the current level to localStorage so progress is remembered
 localStorage.setItem('riverRescueLevel', level);
@@ -51,48 +65,73 @@ menuBtn.onclick = () => {
   window.location.href = 'index.html';
 };
 
+// When the pause button is clicked, toggle pause
+pauseBtn.onclick = () => {
+  if (!gameActive) return;
+  paused = true;
+  pauseBtnImg.alt = 'Play';
+  pauseOverlay.classList.add('active');
+};
+
+pauseMenuBtn.onclick = (e) => {
+  e.stopPropagation();
+  window.location.href = 'index.html';
+};
+
+// Clicking the overlay (but not the popup) resumes the game
+pauseOverlay.onclick = (e) => {
+  if (e.target === pauseOverlay) {
+    paused = false;
+    pauseBtnImg.src = 'img/pause.jpg'; // Switch back to pause image
+    pauseBtnImg.alt = 'Pause';
+    pauseOverlay.classList.remove('active');
+    // Resume item spawning if needed
+    spawnItems();
+  }
+};
+
+// Add an array of animal image file paths
+const animalImages = [
+  'img/otter.jpg',      // Existing animal image
+  'img/dog-swim.jpg',    // New animal image 1
+  'img/beaver-swim.webp'     // New animal image 2
+];
+
 // Start or restart the game
 function startGame() {
   // Set up level difficulty
-  itemsToSpawn = 5 + (level - 1) * 2; // More items each level
-  garbageChance = Math.min(0.7 + (level - 1) * 0.05, 0.95); // More garbage each level, max 95%
-  itemFallSpeed = 2 + level; // Items fall faster each level
+  // Adjust game variables based on selected difficulty
+  // Only itemFallSpeed and targetScore change with difficulty now
+  if (difficulty === 'easy') {
+    itemFallSpeed = 2 + level * 0.7; // Items fall a bit slower
+    // garbageChance is fixed and does not change
+    targetScore = 8 + (level - 1) * 4; // Lower target score
+  } else if (difficulty === 'hard') {
+    itemFallSpeed = 3 + level * 1.2; // Items fall faster
+    // garbageChance is fixed and does not change
+    targetScore = 14 + (level - 1) * 7; // Higher target score
+  } else {
+    // Normal
+    itemFallSpeed = 2 + level; // Default speed
+    // garbageChance is fixed and does not change
+    targetScore = 10 + (level - 1) * 5; // Default target
+  }
   score = 0;
-  clearedGarbage = 0;
-  totalGarbage = 0;
   gameActive = true;
   gameScreen.classList.remove('hidden');
   endScreen.classList.add('hidden');
-  scoreDisplay.innerText = `Score: ${score}`;
+  scoreDisplay.innerText = `Score: ${score} / ${targetScore}`;
   river.innerHTML = '';
   spawnItems();
 }
 
 // This function spawns garbage and animal items one by one using setTimeout
 function spawnItems() {
-  // Plan which items will be garbage or animals
-  const garbagePlan = [];
-  totalGarbage = 0;
-  for (let i = 0; i < itemsToSpawn; i++) {
+  function spawnNextItem() {
+    if (!gameActive) return;
+    if (paused) return; // Stop spawning if paused
     // Randomly decide if this item is garbage
     const isGarbage = Math.random() < garbageChance;
-    garbagePlan.push(isGarbage);
-    if (isGarbage) totalGarbage++;
-  }
-  // Make sure there is at least one garbage item
-  if (totalGarbage === 0) {
-    garbagePlan[0] = true;
-    totalGarbage = 1;
-  }
-
-  let itemsSpawned = 0;
-
-  // Helper function to spawn a single item
-  function spawnNextItem() {
-    if (!gameActive || itemsSpawned >= itemsToSpawn) {
-      return; // Stop if game is not active or all items are spawned
-    }
-    const isGarbage = garbagePlan[itemsSpawned];
     // Create a new image element for the item
     const item = document.createElement('img');
     item.classList.add('item');
@@ -103,7 +142,9 @@ function spawnItems() {
       item.alt = 'Garbage';
       item.dataset.type = 'garbage';
     } else {
-      item.src = 'img/otter.jpg'; // Animal image
+      // Pick a random animal image from the array
+      const randomIndex = Math.floor(Math.random() * animalImages.length);
+      item.src = animalImages[randomIndex];
       item.alt = 'Happy Animal';
       item.dataset.type = 'animal';
     }
@@ -113,13 +154,11 @@ function spawnItems() {
     item.onclick = () => handleItemClick(item);
     // Start the falling animation
     fallItem(item);
-    itemsSpawned++;
-    // Spawn the next item after a delay
-    if (itemsSpawned < itemsToSpawn && gameActive) {
+    // Keep spawning items as long as the game is active
+    if (gameActive && !paused) {
       setTimeout(spawnNextItem, Math.max(400, 1000 - level * 100));
     }
   }
-
   // Start spawning the first item
   spawnNextItem();
 }
@@ -134,43 +173,44 @@ function handleItemClick(item) {
     happySound.play();
     item.remove();
     score++;
-    clearedGarbage++;
-    scoreDisplay.innerText = `Score: ${score}`;
-    // If all garbage is cleared, win the level
-    if (clearedGarbage === totalGarbage) {
+    scoreDisplay.innerText = `Score: ${score} / ${targetScore}`;
+    // If score reaches target, win the level
+    if (score >= targetScore) {
       winLevel();
+      return;
     }
   } else {
-    // If it's an animal, play fail sound and lose the level
+    // If it's an animal, play fail sound and subtract score
     failSound.currentTime = 0;
     failSound.play();
-    loseLevel('Oh no! You clicked a happy animal!');
+    item.remove();
+    score--;
+    scoreDisplay.innerText = `Score: ${score} / ${targetScore}`;
   }
 }
 
 // Handles what happens when an item falls to the bottom
 function handleItemFall(item) {
   if (!gameActive) return;
-  if (item.dataset.type === 'garbage') {
-    item.remove();
-    loseLevel('You missed some garbage!');
-  } else if (item.dataset.type === 'animal') {
-    // If it's an animal, just remove it (no penalty)
-    item.remove();
-  }
+  // Just remove the item, no score change or lose condition
+  item.remove();
 }
 
 // Makes an item fall down the screen
 function fallItem(item) {
   function fall() {
     if (!gameActive) return;
+    if (paused) {
+      setTimeout(fall, 100); // Check again after a short delay
+      return;
+    }
     let top = parseFloat(item.style.top);
     if (isNaN(top)) top = -60;
     top += itemFallSpeed;
     item.style.top = `${top}px`;
     // If the item reaches the bottom of the screen
     if (top > window.innerHeight - 100) {
-      handleItemFall(item);
+      handleItemFall(item); // Only remove the item, no penalty
     } else {
       // Keep moving the item down
       setTimeout(fall, 20);
@@ -195,7 +235,7 @@ function winLevel() {
   gameActive = false; // Stop the game
   gameScreen.classList.add('hidden'); // Hide game screen
   endScreen.classList.remove('hidden'); // Show end screen
-  endMessage.innerText = 'Great job! River is cleaner!';
+  endMessage.innerText = `Great job! You cleaned the river!\nFinal Score: ${score}`;
   nextBtn.classList.remove('hidden'); // Show next level button
 }
 
@@ -204,7 +244,7 @@ function loseLevel(message) {
   gameActive = false; // Stop the game
   gameScreen.classList.add('hidden'); // Hide game screen
   endScreen.classList.remove('hidden'); // Show end screen
-  endMessage.innerText = message; // Show the reason for losing
+  endMessage.innerText = `${message}\nFinal Score: ${score}`;
   nextBtn.classList.add('hidden'); // Hide next level button
 }
 

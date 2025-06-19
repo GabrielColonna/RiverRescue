@@ -7,20 +7,60 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <img id="main-bg-img" src="img/river-rescue-new.jpg" alt="River Rescue Background">
   <div id="game-container">
     <div id="home-screen">
-      <h1>RIVER RESCUE</h1>
-      <p>LEVEL <span id="level">1</span></p>
+      <p id="level-display">LEVEL <span id="level">1</span></p>
+      <!-- Difficulty selection for beginners -->
+      <div id="difficulty-select" style="margin-bottom: 12px;">
+        <label>
+          <input type="radio" name="difficulty" value="easy" checked>
+          Easy
+        </label>
+        <label>
+          <input type="radio" name="difficulty" value="normal">
+          Normal
+        </label>
+        <label>
+          <input type="radio" name="difficulty" value="hard">
+          Hard
+        </label>
+      </div>
       <button id="start-btn">Start Game</button>
     </div>
+  </div>
+  <div id="main-footer">
+    
+    <!-- Added charity:water and donate links below -->
+    <br>
+    Check out our website: <a href="https://www.charitywater.org/main" target="_blank" style="color:#ffffff; text-decoration:underline; margin-right:12px;">
+      Charity:Water
+    </a>
+
+    ||  &copy; 2025 River Rescue &mdash; Clean Waterways Initiative ||
+
+    <a href="https://www.charitywater.org/donate" target="_blank" style="color:#ffffff; text-decoration:underline;">
+      Click here to make a donation!
+    </a>
   </div>
   <script>
     // Get last level from localStorage or default to 1
     const levelDisplay = document.getElementById('level');
     let lastLevel = localStorage.getItem('riverRescueLevel') || 1;
     levelDisplay.innerText = lastLevel;
-    document.getElementById('start-btn').onclick = function() {
-      window.location.href = 'game.html?level=' + lastLevel;
+    // Get difficulty selection
+    const startBtn = document.getElementById('start-btn');
+    startBtn.onclick = function() {
+      // Get selected difficulty (easy, normal, hard)
+      const diffRadios = document.getElementsByName('difficulty');
+      let selectedDifficulty = 'easy';
+      for (const radio of diffRadios) {
+        if (radio.checked) {
+          selectedDifficulty = radio.value;
+        }
+      }
+      // Pass difficulty in URL to game.html
+      window.location.href = `game.html?level=${lastLevel}&difficulty=${selectedDifficulty}`;
     };
   </script>
 </body>
